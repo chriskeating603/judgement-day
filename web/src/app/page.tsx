@@ -53,6 +53,12 @@ function Main() {
         </h2>
       </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
+        {isLoading && (
+          <p className="text-2xl font-semibold text-center w-full animate-pulse">
+            Loading... this was built in a day... please wait lol
+          </p>
+        )}
+        {data && data.length}
         {data && data.length > 0 && (
           <ul className="flex flex-col gap-4 w-full">
             {data.map((user) => (
@@ -60,6 +66,7 @@ function Main() {
                 key={user.id}
                 className="flex flex-col gap-2 border w-full rounded-xl p-4"
               >
+                {/* {JSON.stringify(user)} */}
                 <div className="flex flex-col items-center">
                   {user.judgement_json.image && (
                     // eslint-disable-next-line @next/next/no-img-element
