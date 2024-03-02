@@ -1,55 +1,102 @@
 import { config } from "dotenv";
 import { exec } from "child_process";
 import { writeFile } from "fs/promises";
-import * as fs from 'fs';
-import { OpenAI } from 'openai';
-config(); // Load environment variables
+import * as fs from "fs";
+import { OpenAI } from "openai";
+import readline from "readline";
 
-const record = require('node-record-lpcm16');
+config({
+  path: "../.env",
+}); // Load environment variables
 
-async function main() {
+const record = require("node-record-lpcm16");
 
-  const teamname = 'team1'
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-  console.log('Recording for 5 seconds...');
-  const recording = record.record({
+rl.on("line", (input) => {
+  const [command, ...args] = input.split(" ");
+  const teamName = args.join(" ");
+  if (!teamName) {
+    console.log("Please provide a team name.");
+    return;
+  }
+  if (command === "start") {
+    startRecording(teamName);
+  } else if (command === "stop") {
+    stopRecording(teamName);
+  } else if (command === "transcribe") {
+    transcribe(teamName);
+  } else if (command === "judgement") {
+    gptJudgementDay(teamName);
+  } else if (command === "exit") {
+    rl.close();
+  } else {
+    console.log(
+      'Unknown command. Type "start" to begin recording, "stop" to end, or "exit" to quit.'
+    );
+  }
+});
+
+let recordingStream: NodeJS.ReadableStream | null = null;
+let audioData: Buffer[] = [];
+let recorder: ReturnType<typeof record.record> | null = null;
+
+async function startRecording(teamName: string) {
+  try {
+    const response = await fetch("https://www.judgementday.xyz/api/put-data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        teamName: teamName,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log(`Judgement for ${teamName} sent to web!`);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+
+  console.log(`Starting recording for ${teamName}...`);
+  recorder = record.record({
     sampleRate: 16000,
     threshold: 0.5,
     verbose: false,
-    recordProgram: 'sox', // Adjust according to your OS and available recording software
-    silence: '10.0',
+    recordProgram: "sox", // Adjust this to your available recording software
+    silence: "10.0",
   });
 
-  let audioData: Buffer[] = [];
-  const recordingStream = recording.stream();
-  recordingStream.on('data', (data: Buffer) => {
+  audioData = [];
+  recordingStream = recorder.stream();
+  recordingStream?.on("data", (data: Buffer) => {
     audioData.push(data);
   });
-
-  await new Promise(resolve => setTimeout(resolve, 5000)); // Record for 5 seconds
-  recording.stop(); // Correctly stop the recording
-
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: "https://oai.hconeai.com/v1",
-    defaultHeaders: {
-      "Helicone-Auth": "Bearer " + process.env.HELICONE_API_KEY,
-    },
-  });
-
-  // Save the recorded audio to a file
-  const audioFileName = `${teamname}_recorded_audio.wav`;
-  await writeFile(audioFileName, Buffer.concat(audioData));
-  console.log('Transcribing with Whisper...')
-  const transcription = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(`${teamname}_recorded_audio.wav`),
-    model: "whisper-1",
-  });
-  
-  console.log(transcription.text);
-  return transcription.text;
 }
 
+async function stopRecording(teamName: string) {
+  if (recordingStream) {
+    console.log(`Stopping recording for ${teamName}...`);
+    recorder.stop();
+    recordingStream = null;
+    recorder = null;
+    const audioFileName = `${teamName}_recorded_audio.wav`;
+    await writeFile(audioFileName, Buffer.concat(audioData));
+  } else {
+    console.log("No recording to stop.");
+  }
+
+  await transcribe(teamName);
+}
+
+async function transcribe(teamName: string) {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: "https://oai.hconeai.com/v1",
@@ -59,36 +106,46 @@ async function main() {
     },
   });
 
-  // const res = await openai.audio.transcriptions.create({
-  //   file: "./files/",
-  // });
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(`${teamName}_recorded_audio.wav`),
+    model: "whisper-1",
+  });
 
-  // res.text;
+  const transcriptionFileName = `${teamName}_transcription.txt`;
+  await writeFile(transcriptionFileName, transcription.text);
+}
 
-  // const result = await gptJudgement(
-  //   `Uh, hey everyone, um, thanks for, uh, giving me the chance to present our project today. So, um, our team, we've been working on this, uh, this app, right? It's kinda cool, it's, uh, it's designed to, well, help people find local events, kinda like, uh, concerts or, um, art shows, stuff like that.
-  // So, uh, the way it works is, um, you just, like, open the app, and uh, you know, you tell it, uh, what kind of events you're into, and it, um, it uses your location to, uh, to find stuff that's happening around you. It's, uh, it's pretty straightforward, but, you know, we think it's, uh, it's really useful.
-  // Um, we've, uh, we've focused a lot on, like, the user interface, making sure it's, uh, it's really user-friendly. Uh, we know that, um, if it's not easy to use, people just, um, they won't bother, right? So, uh, yeah, we spent a lot of time on that.
-  // Uh, in terms of, um, what we used to build it, uh, we went with React Native, because, uh, we wanted it to work on, you know, both iOS and Android, without having to, like, write everything twice, um, which is, you know, it's pretty cool.
-  // Uh, we've also, um, integrated this, uh, this map API, so when you, um, when you look for events, you can, uh, you can see them on a map, and, um, you can get directions and stuff, which is, uh, pretty handy.
-  // Um, I guess, uh, that's pretty much it, uh, for the, uh, the presentation. We're, um, we're really excited about the, uh, the potential of the app, and, uh, we're, you know, we're looking forward to, uh, seeing how people, um, how they use it in, uh, in real life. So, uh, yeah, thanks, thanks for listening, and, uh, I'm happy to, um, to answer any questions you, uh, you might have.`,
-  //   "Event Finder"
-  // );
+async function gptJudgementDay(teamName: string) {
+  const transcription = fs.readFileSync(
+    `${teamName}_transcription.txt`,
+    "utf-8"
+  );
+  const res = await gptJudgement(transcription, teamName);
+  console.log(`Judgement for ${teamName}:`, JSON.stringify(res, null, 2));
 
-  //   await gptJudgement(
-  //     `Good evening, esteemed judges and fellow innovators. Today, my team and I are thrilled to unveil 'Dreamscape,' a revolutionary application that melds the whimsy of imagination with the gravitas of our daily responsibilities, all while pushing the envelope of technological innovation.
-  // Let's embark on a journey with 'Dreamscape.' Imagine an app that not only organizes your day but does so in a way that infuses the magic of your favorite fantasy worlds into your routine. Yes, you heard it right. Our app transforms your mundane task list into an enchanting quest, complete with your own digital familiar to guide you through your day.
-  // Now, let's address the gravitas. 'Dreamscape' isn't just a delightful facade; it's a robust productivity tool. It leverages AI to prioritize your tasks based on urgency and importance, integrating seamlessly with your digital calendar and reminding you of deadlines in a manner that's both engaging and effective.
-  // And innovation? We're the first to admit that productivity apps are a dime a dozen. But here's where 'Dreamscape' stands out. Our app uses augmented reality to project your daily quests into your living space. Imagine looking through your phone or AR glasses to see a mythical creature sitting on your desk, reminding you of your next meeting or encouraging you to take a break and hydrate.
-  // In conclusion, 'Dreamscape' is where whimsy meets wisdom, where your to-do list becomes a to-dream list. It's not just an app; it's an experience, one that we believe will set a new standard in how we interact with our daily tasks. Thank you for allowing us to share this vision with you. We are eager to answer any questions and delve deeper into the enchanting world of 'Dreamscape.'`,
-  //     "Dreamscape"
-  //   );
-// }
+  try {
+    const response = await fetch("https://www.judgementday.xyz/api/put-data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(res),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log(`Judgement for ${teamName} sent to web!`);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+}
 
 type piss = {
-  whimsical: number;
+  virality: number;
   gravitas: number;
-  innovation: number;
+  innovative: number;
   review: string;
 };
 
@@ -111,7 +168,7 @@ type JustinsCute = {
 async function gptJudgement(
   transcription: string,
   teamName: string
-): Promise<void> {
+): Promise<JustinsCute> {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: "https://oai.hconeai.com/v1",
@@ -122,18 +179,25 @@ async function gptJudgement(
   });
 
   const chatPromise = openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-4-0125-preview",
     messages: [
       {
         role: "system",
-        content:
-          "You're a professional hackathon judge who has judged millions of the top hackathons across the globe. Your task is to judge the following project based on specific criteria: whimsical, gravitas, and innovation. Provide a rating out of 10 for each criterion and give a short, harsh, roast, and direct review of the person's hackathon presentation. ROAST THEM LIKE BILL BURR!",
+        content: `You're a professional hackathon judge who has judged millions of the top hackathons across the globe. Your task is to judge the following project based on specific criteria: virality, gravitas, and innovative. Provide a rating out of 10 for each criterion and give a short, harsh, roast, and direct review of the person's hackathon presentation. ROAST THEM LIKE BILL BURR!
+           MAX 3 SENTENCES!
+          `,
       },
       {
         role: "user",
         content: `Team Name: """${teamName}""". Transcription: """${transcription}"""`,
       },
     ],
+    tool_choice: {
+      type: "function",
+      function: {
+        name: "rate_project",
+      },
+    },
     tools: [
       {
         type: "function",
@@ -143,20 +207,20 @@ async function gptJudgement(
           parameters: {
             type: "object",
             properties: {
-              whimsical: {
+              virality: {
                 type: "number",
                 description:
-                  "Rate the project's whimsicality on a scale of 1 to 10.",
+                  "Rate the project's viralityity on a scale of 1 to 10.",
               },
               gravitas: {
                 type: "number",
                 description:
                   "Rate the project's gravitas on a scale of 1 to 10.",
               },
-              innovation: {
+              innovative: {
                 type: "number",
                 description:
-                  "Rate the project's innovation on a scale of 1 to 10.",
+                  "Rate the project's innovative on a scale of 1 to 10.",
               },
               review: {
                 type: "string",
@@ -164,7 +228,7 @@ async function gptJudgement(
                   "Provide a short, harsh, roast and direct review of the project. ROAST THEM LIKE BILL BURR!",
               },
             },
-            required: ["whimsical", "gravitas", "innovation", "review"],
+            required: ["virality", "gravitas", "innovative", "review"],
           },
         },
       },
@@ -173,7 +237,7 @@ async function gptJudgement(
 
   const imagePromise = openai.images.generate({
     model: "dall-e-3",
-    prompt: `Product image for a hackathon project named ${teamName}. Make it simple and whimsical.`,
+    prompt: `Make a simple vector graphic for a hackathon project named ${teamName}. Make it cool and futuristic.`,
     n: 1,
     size: "1024x1024",
   });
@@ -189,29 +253,23 @@ async function gptJudgement(
     judgement: {
       criteria: [
         {
-          name: "whimsical",
-          rating: piss.whimsical,
+          name: "virality",
+          rating: piss.virality,
         },
         {
           name: "gravitas",
           rating: piss.gravitas,
         },
         {
-          name: "innovation",
-          rating: piss.innovation,
+          name: "innovative",
+          rating: piss.innovative,
         },
       ],
       review: piss.review,
       image: image.data[0].url ?? "",
     },
   };
-  console.log(`justin: ${JSON.stringify(justin, null, 2)}`);
-}
-
-const args = process.argv.slice(3);
-
-if (args.length === 0) {
-  main();
+  return justin;
 }
 
 /*
@@ -220,7 +278,7 @@ if (args.length === 0) {
   judgement: {
     criteria: [
       {
-        name: "whimsical",
+        name: "virality",
         rating: 10,
       },
       {
@@ -228,7 +286,7 @@ if (args.length === 0) {
         rating: 10,
       },
       {
-        name: "innovation",
+        name: "innovative",
         rating: 10,
       },
     ],
