@@ -7,6 +7,23 @@ config({
 });
 
 async function main() {
+  const teamname = process.argv.slice(2);
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: "https://oai.hconeai.com/v1",
+    organization: process.env.OPENAI_ORG,
+    defaultHeaders: {
+      "Helicone-Auth": "Bearer " + process.env.HELICONE_API_KEY,
+    },
+  });
+
+  // const res = await openai.audio.transcriptions.create({
+  //   file: "./files/",
+  // });
+
+  // res.text;
+
   // const result = await gptJudgement(
   //   `Uh, hey everyone, um, thanks for, uh, giving me the chance to present our project today. So, um, our team, we've been working on this, uh, this app, right? It's kinda cool, it's, uh, it's designed to, well, help people find local events, kinda like, uh, concerts or, um, art shows, stuff like that.
   // So, uh, the way it works is, um, you just, like, open the app, and uh, you know, you tell it, uh, what kind of events you're into, and it, um, it uses your location to, uh, to find stuff that's happening around you. It's, uh, it's pretty straightforward, but, you know, we think it's, uh, it's really useful.
@@ -17,14 +34,14 @@ async function main() {
   //   "Event Finder"
   // );
 
-  await gptJudgement(
-    `Good evening, esteemed judges and fellow innovators. Today, my team and I are thrilled to unveil 'Dreamscape,' a revolutionary application that melds the whimsy of imagination with the gravitas of our daily responsibilities, all while pushing the envelope of technological innovation.
-Let's embark on a journey with 'Dreamscape.' Imagine an app that not only organizes your day but does so in a way that infuses the magic of your favorite fantasy worlds into your routine. Yes, you heard it right. Our app transforms your mundane task list into an enchanting quest, complete with your own digital familiar to guide you through your day.
-Now, let's address the gravitas. 'Dreamscape' isn't just a delightful facade; it's a robust productivity tool. It leverages AI to prioritize your tasks based on urgency and importance, integrating seamlessly with your digital calendar and reminding you of deadlines in a manner that's both engaging and effective.
-And innovation? We're the first to admit that productivity apps are a dime a dozen. But here's where 'Dreamscape' stands out. Our app uses augmented reality to project your daily quests into your living space. Imagine looking through your phone or AR glasses to see a mythical creature sitting on your desk, reminding you of your next meeting or encouraging you to take a break and hydrate.
-In conclusion, 'Dreamscape' is where whimsy meets wisdom, where your to-do list becomes a to-dream list. It's not just an app; it's an experience, one that we believe will set a new standard in how we interact with our daily tasks. Thank you for allowing us to share this vision with you. We are eager to answer any questions and delve deeper into the enchanting world of 'Dreamscape.'`,
-    "Dreamscape"
-  );
+  //   await gptJudgement(
+  //     `Good evening, esteemed judges and fellow innovators. Today, my team and I are thrilled to unveil 'Dreamscape,' a revolutionary application that melds the whimsy of imagination with the gravitas of our daily responsibilities, all while pushing the envelope of technological innovation.
+  // Let's embark on a journey with 'Dreamscape.' Imagine an app that not only organizes your day but does so in a way that infuses the magic of your favorite fantasy worlds into your routine. Yes, you heard it right. Our app transforms your mundane task list into an enchanting quest, complete with your own digital familiar to guide you through your day.
+  // Now, let's address the gravitas. 'Dreamscape' isn't just a delightful facade; it's a robust productivity tool. It leverages AI to prioritize your tasks based on urgency and importance, integrating seamlessly with your digital calendar and reminding you of deadlines in a manner that's both engaging and effective.
+  // And innovation? We're the first to admit that productivity apps are a dime a dozen. But here's where 'Dreamscape' stands out. Our app uses augmented reality to project your daily quests into your living space. Imagine looking through your phone or AR glasses to see a mythical creature sitting on your desk, reminding you of your next meeting or encouraging you to take a break and hydrate.
+  // In conclusion, 'Dreamscape' is where whimsy meets wisdom, where your to-do list becomes a to-dream list. It's not just an app; it's an experience, one that we believe will set a new standard in how we interact with our daily tasks. Thank you for allowing us to share this vision with you. We are eager to answer any questions and delve deeper into the enchanting world of 'Dreamscape.'`,
+  //     "Dreamscape"
+  //   );
 }
 
 type piss = {
@@ -150,7 +167,11 @@ async function gptJudgement(
   console.log(`justin: ${JSON.stringify(justin, null, 2)}`);
 }
 
-main();
+const args = process.argv.slice(3);
+
+if (args.length === 0) {
+  main();
+}
 
 /*
 {
