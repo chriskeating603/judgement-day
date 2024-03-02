@@ -23,7 +23,10 @@ function Main() {
   const { data, isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async (query) => {
-      const res = await fetch("/api/fetch", { cache: "no-store" });
+      const res = await fetch("/api/fetch", {
+        cache: "no-store",
+        method: "POST",
+      });
       const data = await res.json();
       return data as {
         id: number;
