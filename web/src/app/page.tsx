@@ -52,7 +52,7 @@ function Main() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/one.webp" alt="Judge" width={200} height={200} />
         <h2 className="text-lg md:text-2xl font-semibold">
-          <u>One</u> is today{"'"}s judge
+          <u>One{"'"}s</u> Judgement
         </h2>
       </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
@@ -62,11 +62,11 @@ function Main() {
           </p>
         )}
         {data && data.length > 0 && (
-          <ul className="flex flex-col gap-4 w-full">
+          <ul className="flex flex-col gap-4 w-full max-w-3xl">
             {data.map((user) => (
               <li
                 key={user.id}
-                className="flex flex-col gap-2 border w-full rounded-xl p-4"
+                className="flex flex-col gap-2 border w-full rounded-xl p-4 shadow-lg"
               >
                 {/* {JSON.stringify(user)} */}
                 <div className="flex flex-col items-center">
@@ -75,8 +75,8 @@ function Main() {
                     <img
                       src={user.judgement_json.image}
                       alt="User"
-                      width={100}
-                      height={100}
+                      width={500}
+                      height={500}
                     />
                   )}
                   <h2 className="font-semibold">{user.name}</h2>
