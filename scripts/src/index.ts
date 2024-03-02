@@ -7,15 +7,15 @@ config({
 });
 
 async function main() {
-  const result = await gptJudgement(
-    `Uh, hey everyone, um, thanks for, uh, giving me the chance to present our project today. So, um, our team, we've been working on this, uh, this app, right? It's kinda cool, it's, uh, it's designed to, well, help people find local events, kinda like, uh, concerts or, um, art shows, stuff like that.
-  So, uh, the way it works is, um, you just, like, open the app, and uh, you know, you tell it, uh, what kind of events you're into, and it, um, it uses your location to, uh, to find stuff that's happening around you. It's, uh, it's pretty straightforward, but, you know, we think it's, uh, it's really useful.
-  Um, we've, uh, we've focused a lot on, like, the user interface, making sure it's, uh, it's really user-friendly. Uh, we know that, um, if it's not easy to use, people just, um, they won't bother, right? So, uh, yeah, we spent a lot of time on that.
-  Uh, in terms of, um, what we used to build it, uh, we went with React Native, because, uh, we wanted it to work on, you know, both iOS and Android, without having to, like, write everything twice, um, which is, you know, it's pretty cool.
-  Uh, we've also, um, integrated this, uh, this map API, so when you, um, when you look for events, you can, uh, you can see them on a map, and, um, you can get directions and stuff, which is, uh, pretty handy.
-  Um, I guess, uh, that's pretty much it, uh, for the, uh, the presentation. We're, um, we're really excited about the, uh, the potential of the app, and, uh, we're, you know, we're looking forward to, uh, seeing how people, um, how they use it in, uh, in real life. So, uh, yeah, thanks, thanks for listening, and, uh, I'm happy to, um, to answer any questions you, uh, you might have.`,
-    "Event Finder"
-  );
+  // const result = await gptJudgement(
+  //   `Uh, hey everyone, um, thanks for, uh, giving me the chance to present our project today. So, um, our team, we've been working on this, uh, this app, right? It's kinda cool, it's, uh, it's designed to, well, help people find local events, kinda like, uh, concerts or, um, art shows, stuff like that.
+  // So, uh, the way it works is, um, you just, like, open the app, and uh, you know, you tell it, uh, what kind of events you're into, and it, um, it uses your location to, uh, to find stuff that's happening around you. It's, uh, it's pretty straightforward, but, you know, we think it's, uh, it's really useful.
+  // Um, we've, uh, we've focused a lot on, like, the user interface, making sure it's, uh, it's really user-friendly. Uh, we know that, um, if it's not easy to use, people just, um, they won't bother, right? So, uh, yeah, we spent a lot of time on that.
+  // Uh, in terms of, um, what we used to build it, uh, we went with React Native, because, uh, we wanted it to work on, you know, both iOS and Android, without having to, like, write everything twice, um, which is, you know, it's pretty cool.
+  // Uh, we've also, um, integrated this, uh, this map API, so when you, um, when you look for events, you can, uh, you can see them on a map, and, um, you can get directions and stuff, which is, uh, pretty handy.
+  // Um, I guess, uh, that's pretty much it, uh, for the, uh, the presentation. We're, um, we're really excited about the, uh, the potential of the app, and, uh, we're, you know, we're looking forward to, uh, seeing how people, um, how they use it in, uh, in real life. So, uh, yeah, thanks, thanks for listening, and, uh, I'm happy to, um, to answer any questions you, uh, you might have.`,
+  //   "Event Finder"
+  // );
 
   await gptJudgement(
     `Good evening, esteemed judges and fellow innovators. Today, my team and I are thrilled to unveil 'Dreamscape,' a revolutionary application that melds the whimsy of imagination with the gravitas of our daily responsibilities, all while pushing the envelope of technological innovation.
@@ -42,6 +42,7 @@ type Criteria = {
 type Judgement = {
   criteria: Criteria[];
   review: string;
+  image: string;
 };
 
 type JustinsCute = {
@@ -62,7 +63,7 @@ async function gptJudgement(
     },
   });
 
-  const response = await openai.chat.completions.create({
+  const chatPromise = openai.chat.completions.create({
     model: "gpt-4",
     messages: [
       {
@@ -112,30 +113,41 @@ async function gptJudgement(
     ],
   });
 
-  const parsedArgs: piss = JSON.parse(
+  const imagePromise = openai.images.generate({
+    model: "dall-e-3",
+    prompt: `Product image for a hackathon project named ${teamName}. Make it simple and whimsical.`,
+    n: 1,
+    size: "1024x1024",
+  });
+
+  const [response, image] = await Promise.all([chatPromise, imagePromise]);
+
+  const piss: piss = JSON.parse(
     response.choices[0].message.tool_calls?.[0].function.arguments ?? "{}"
   ) as piss;
 
   const justin: JustinsCute = {
-    teamName: "Name 1",
+    teamName: teamName,
     judgement: {
       criteria: [
         {
           name: "whimsical",
-          rating: parsedArgs.whimsical,
+          rating: piss.whimsical,
         },
         {
           name: "gravitas",
-          rating: parsedArgs.gravitas,
+          rating: piss.gravitas,
         },
         {
           name: "innovation",
-          rating: parsedArgs.innovation,
+          rating: piss.innovation,
         },
       ],
-      review: parsedArgs.review,
+      review: piss.review,
+      image: image.data[0].url ?? "",
     },
   };
+  console.log(`justin: ${JSON.stringify(justin, null, 2)}`);
 }
 
 main();
