@@ -19,7 +19,7 @@ export default function Home() {
   );
 }
 
-export function Main() {
+function Main() {
   const { data, isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async (query) => {
@@ -29,6 +29,7 @@ export function Main() {
         id: number;
         name: string;
         judgement_json: {
+          image: string;
           criteria: {
             name: string;
             rating: number;
@@ -42,7 +43,7 @@ export function Main() {
   });
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-36 p-24 w-full ">
+    <main className="flex min-h-screen flex-col items-center gap-20 py-24 w-full ">
       <div className=" flex flex-col items-center gap-10">
         <h1 className="text-2xl md:text-6xl font-bold ">Judgement Day</h1>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -51,20 +52,42 @@ export function Main() {
           <u>One</u> is today{"'"}s judge
         </h2>
       </div>
-      {data && data.length > 0 && (
-        <div className="flex flex-col gap-4 items-center w-full">
-          <ul className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 items-center w-full px-10">
+        {data && data.length > 0 && (
+          <ul className="flex flex-col gap-4 w-full">
             {data.map((user) => (
-              <li key={user.id} className="flex flex-col gap-2">
-                <h2 className="text-2xl font-semibold">{user.name}</h2>
+              <li
+                key={user.id}
+                className="flex flex-col gap-2 border w-full rounded-xl p-4"
+              >
+                <div className="flex flex-col items-center">
+                  {user.judgement_json.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.judgement_json.image}
+                      alt="User"
+                      width={100}
+                      height={100}
+                    />
+                  )}
+                  <h2 className="font-semibold">{user.name}</h2>
+                </div>
                 <p className="text-sm opacity-50">
                   {user.judgement_json.review}
                 </p>
+                <ul className="flex flex-col">
+                  {user.judgement_json.criteria.map((criterion) => (
+                    <li key={criterion.name} className="flex gap-4">
+                      <h3 className="font-semibold">{criterion.name}</h3>
+                      <p>{criterion.rating}</p>
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
