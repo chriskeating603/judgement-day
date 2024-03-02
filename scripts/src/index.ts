@@ -1,13 +1,54 @@
-import { OpenAI } from "openai";
-// dotenv
 import { config } from "dotenv";
+import { exec } from "child_process";
+import { writeFile } from "fs/promises";
+import * as fs from 'fs';
+import { OpenAI } from 'openai';
+config(); // Load environment variables
 
-config({
-  path: "../.env",
-});
+const record = require('node-record-lpcm16');
 
 async function main() {
-  const teamname = process.argv.slice(2);
+
+  const teamname = 'team1'
+
+  console.log('Recording for 5 seconds...');
+  const recording = record.record({
+    sampleRate: 16000,
+    threshold: 0.5,
+    verbose: false,
+    recordProgram: 'sox', // Adjust according to your OS and available recording software
+    silence: '10.0',
+  });
+
+  let audioData: Buffer[] = [];
+  const recordingStream = recording.stream();
+  recordingStream.on('data', (data: Buffer) => {
+    audioData.push(data);
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 5000)); // Record for 5 seconds
+  recording.stop(); // Correctly stop the recording
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: "https://oai.hconeai.com/v1",
+    defaultHeaders: {
+      "Helicone-Auth": "Bearer " + process.env.HELICONE_API_KEY,
+    },
+  });
+
+  // Save the recorded audio to a file
+  const audioFileName = `${teamname}_recorded_audio.wav`;
+  await writeFile(audioFileName, Buffer.concat(audioData));
+  console.log('Transcribing with Whisper...')
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(`${teamname}_recorded_audio.wav`),
+    model: "whisper-1",
+  });
+  
+  console.log(transcription.text);
+  return transcription.text;
+}
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -42,7 +83,7 @@ async function main() {
   // In conclusion, 'Dreamscape' is where whimsy meets wisdom, where your to-do list becomes a to-dream list. It's not just an app; it's an experience, one that we believe will set a new standard in how we interact with our daily tasks. Thank you for allowing us to share this vision with you. We are eager to answer any questions and delve deeper into the enchanting world of 'Dreamscape.'`,
   //     "Dreamscape"
   //   );
-}
+// }
 
 type piss = {
   whimsical: number;
