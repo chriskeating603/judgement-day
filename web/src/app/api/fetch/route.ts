@@ -5,6 +5,6 @@ import { db } from "@vercel/postgres";
 export async function GET(req: NextRequest) {
   const client = await db.connect();
   const res = await client.sql`SELECT * from users ORDER BY created_on DESC`;
-  // console.log(res.rows);
+  console.log(res);
   return new NextResponse(JSON.stringify(res.rows));
 }

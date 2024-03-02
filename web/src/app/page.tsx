@@ -39,7 +39,7 @@ function Main() {
       }[];
     },
 
-    refetchInterval: 500,
+    refetchInterval: 2000,
   });
 
   return (
@@ -58,7 +58,6 @@ function Main() {
             Loading... this was built in a day... please wait lol
           </p>
         )}
-        {data && data.length}
         {data && data.length > 0 && (
           <ul className="flex flex-col gap-4 w-full">
             {data.map((user) => (
@@ -79,17 +78,21 @@ function Main() {
                   )}
                   <h2 className="font-semibold">{user.name}</h2>
                 </div>
-                <p className="text-sm opacity-50">
-                  {user.judgement_json.review}
-                </p>
-                <ul className="flex flex-col">
-                  {user.judgement_json.criteria.map((criterion) => (
-                    <li key={criterion.name} className="flex gap-4">
-                      <h3 className="font-semibold">{criterion.name}</h3>
-                      <p>{criterion.rating}</p>
-                    </li>
-                  ))}
-                </ul>
+                {user.judgement_json.review && (
+                  <>
+                    <p className="text-sm opacity-50">
+                      {user.judgement_json.review}
+                    </p>
+                    <ul className="flex flex-col">
+                      {user.judgement_json.criteria.map((criterion) => (
+                        <li key={criterion.name} className="flex gap-4">
+                          <h3 className="font-semibold">{criterion.name}</h3>
+                          <p>{criterion.rating}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </li>
             ))}
           </ul>
