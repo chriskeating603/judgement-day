@@ -74,7 +74,7 @@ function Main() {
             side.
           </p>
           <br />
-          {top3 && (
+          {top3 && top3[0] && (
             <>
               <p>
                 1st: 🤗 {top3[0]?.name} 🤗{" ("}
