@@ -68,7 +68,7 @@ function Main() {
         <div className="flex flex-col items-center gap-5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/one.webp"
+            src={Math.random() > 0.2 ? "/one.jpg" : "/one.jpg"}
             alt="Judge"
             width={200}
             height={200}
