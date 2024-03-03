@@ -62,13 +62,23 @@ function Main() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 py-24 w-full ">
       <div className=" flex flex-col items-center gap-10">
-        <h1 className="text-2xl md:text-6xl font-bold ">Judgement Day</h1>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/one.webp" alt="Judge" width={200} height={200} />
-        <h2 className="text-lg md:text-2xl font-semibold">
-          <u>One{"'"}s</u> Judgement
-        </h2>
-        <div className="border p-5 rounded-lg shadow-lg mx-5 max-w-sm">
+        <h1 className="text-2xl md:text-6xl font-bold  border rounded-md p-5 shadow-sm">
+          Judgement Day
+        </h1>
+        <div className="flex flex-col items-center gap-5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/one.webp"
+            alt="Judge"
+            width={200}
+            height={200}
+            className="rounded-xl"
+          />
+          <h2 className="text-lg md:text-2xl font-semibold">
+            <u>One{"'"}s</u> Judgement
+          </h2>
+        </div>
+        <div className="border p-5 rounded-lg shadow-sm mx-5 max-w-sm">
           <p className="font-semibold">
             One{"'"}s judgement is ruthless and final. Do not get on his bad
             side.
@@ -119,8 +129,8 @@ function Main() {
       </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
         {!(top3 && top3[0]) && (
-          <p className="font-semibold">
-            No judgements have been made yet. Stay tuned for more...
+          <p className="opacity-50 text-sm">
+            waiting for the first judgement to come in...
           </p>
         )}
         {isLoading && (
