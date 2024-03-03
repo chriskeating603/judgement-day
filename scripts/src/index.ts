@@ -184,6 +184,7 @@ async function gptJudgement(
       {
         role: "system",
         content: `You're a professional hackathon judge who has judged millions of the top hackathons across the globe. Your task is to judge the following project based on specific criteria: virality, gravitas, and innovative. Provide a rating out of 10 for each criterion and give a short, harsh, roast, and direct review of the person's hackathon presentation. ROAST THEM LIKE BILL BURR!
+        Roast the idea and presentation.
            MAX 3 SENTENCES!
           `,
       },
