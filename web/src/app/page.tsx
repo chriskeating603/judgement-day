@@ -62,7 +62,7 @@ function Main() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 py-24 w-full ">
       <div className=" flex flex-col items-center gap-10">
-        <h1 className="text-2xl md:text-6xl font-bold  border rounded-md p-5 shadow-sm">
+        <h1 className="text-2xl md:text-6xl font-bold p-5 border-b">
           Judgement Day
         </h1>
         <div className="flex flex-col items-center gap-5">
