@@ -1,6 +1,10 @@
 # Judgement Day
 
-Judgement Day is an AI judge for pitch competitions and hackathons that we built at [AI Startup Hackathon by SiliconValleyDiary.com](https://lu.ma/va2hgeeb). It uses Whisper for speech-to-text transcription, and then DALLE and GPT-4 (from OpenAI) to generate an image and a roast for the product. We used it to mainly joke around with the projects that other teams built at the AMID hackathon and then somehow won the second place prize. 
+Judgement Day is an AI judge for pitch competitions and hackathons that we built at [AI Startup Hackathon by SiliconValleyDiary.com](https://lu.ma/va2hgeeb). It uses Whisper for speech-to-text transcription, and then DALLE and GPT-4 (from OpenAI) to generate an image and a roast for the product. We used it to mainly joke around with the projects that other teams built at the AMID hackathon and then somehow won the second place prize.   
+
+[Demo is here](https://www.loom.com/share/82b46b2067d64ef287ae380b1469ab77?sid=a41046a9-c4ca-4d46-9b48-ca23a6f73269)
+
+
 
 The team is 
 - [Justin Torre](https://www.linkedin.com/in/justintorre/)
