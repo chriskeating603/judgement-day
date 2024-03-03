@@ -46,6 +46,7 @@ function Main() {
   });
 
   const top3 = data
+    ?.map((user) => user)
     ?.sort((a, b) => {
       const aTotal = a.judgement_json.criteria.reduce(
         (acc, criterion) => acc + criterion.rating,
