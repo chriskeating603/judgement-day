@@ -45,6 +45,20 @@ function Main() {
     refetchInterval: 2000,
   });
 
+  const top3 = data
+    ?.sort((a, b) => {
+      const aTotal = a.judgement_json.criteria.reduce(
+        (acc, criterion) => acc + criterion.rating,
+        0
+      );
+      const bTotal = b.judgement_json.criteria.reduce(
+        (acc, criterion) => acc + criterion.rating,
+        0
+      );
+      return bTotal - aTotal;
+    })
+    .slice(0, 3);
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 py-24 w-full ">
       <div className=" flex flex-col items-center gap-10">
@@ -54,6 +68,53 @@ function Main() {
         <h2 className="text-lg md:text-2xl font-semibold">
           <u>One{"'"}s</u> Judgement
         </h2>
+        <div className="border p-5 rounded-lg shadow-lg mx-5 max-w-sm">
+          <p className="font-semibold">
+            One{"'"}s judgement is ruthless and final. Do not get on his bad
+            side.
+          </p>
+          <br />
+          {top3 && (
+            <>
+              <p>
+                1st: 🤗 {top3[0]?.name} 🤗{" ("}
+                {(
+                  top3[0]?.judgement_json.criteria.reduce(
+                    (acc, criterion) => acc + criterion.rating,
+                    0
+                  ) / top3[0]?.judgement_json.criteria.length
+                ).toFixed(2)}
+                {")"}
+              </p>
+              {top3[1] && (
+                <p>
+                  2nd: 😡 {top3[1]?.name} 😡
+                  {" ("}
+                  {(
+                    top3[1]?.judgement_json.criteria.reduce(
+                      (acc, criterion) => acc + criterion.rating,
+                      0
+                    ) / top3[1]?.judgement_json.criteria.length
+                  ).toFixed(2)}
+                  {")"}
+                </p>
+              )}
+              {top3[2] && (
+                <p>
+                  3rd: 🤢 {top3[2]?.name} 🤢
+                  {" ("}
+                  {(
+                    top3[2]?.judgement_json.criteria.reduce(
+                      (acc, criterion) => acc + criterion.rating,
+                      0
+                    ) / top3[2]?.judgement_json.criteria.length
+                  ).toFixed(2)}
+                  {")"}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
         {isLoading && (
