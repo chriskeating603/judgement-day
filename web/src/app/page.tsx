@@ -60,6 +60,8 @@ function Main() {
     })
     .slice(0, 3);
 
+  const [sort, setSort] = useState<"score" | "time">("time");
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 py-24 w-full ">
       <div className=" flex flex-col items-center gap-10">
@@ -128,6 +130,24 @@ function Main() {
           )}
         </div>
       </div>
+      <div className="flex gap-5">
+        <button
+          onClick={() => setSort("time")}
+          className={`${
+            sort === "time" ? "bg-blue-500" : "bg-blue-200"
+          } p-2 rounded-lg`}
+        >
+          Sort by Time
+        </button>
+        <button
+          onClick={() => setSort("score")}
+          className={`${
+            sort === "score" ? "bg-blue-500" : "bg-blue-200"
+          } p-2 rounded-lg`}
+        >
+          Sort by Score
+        </button>
+      </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
         {!(top3 && top3[0]) && (
           <p className="opacity-50 text-sm">
@@ -141,44 +161,62 @@ function Main() {
         )}
         {data && data.length > 0 && (
           <ul className="flex flex-col gap-4 w-full max-w-3xl">
-            {data.map((user) => (
-              <li
-                key={user.id}
-                className="flex flex-col gap-2 border w-full rounded-xl p-4 shadow-lg"
-              >
-                {/* {JSON.stringify(user)} */}
-                <div className="flex flex-col items-center">
-                  {user.judgement_json.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={user.judgement_json.image}
-                      alt="User"
-                      width={500}
-                      height={500}
-                    />
+            {data
+              .sort((a, b) => {
+                if (sort === "time") {
+                  return b.id - a.id;
+                } else {
+                  const aTotal = a.judgement_json.criteria.reduce(
+                    (acc, criterion) => acc + criterion.rating,
+                    0
+                  );
+                  const bTotal = b.judgement_json.criteria.reduce(
+                    (acc, criterion) => acc + criterion.rating,
+                    0
+                  );
+                  return bTotal - aTotal;
+                }
+              })
+              .map((user) => (
+                <li
+                  key={user.id}
+                  className="flex flex-col gap-2 border w-full rounded-xl p-4 shadow-lg"
+                >
+                  {/* {JSON.stringify(user)} */}
+                  <div className="flex flex-col items-center">
+                    {user.judgement_json.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={user.judgement_json.image}
+                        alt="User"
+                        width={500}
+                        height={500}
+                      />
+                    )}
+                    <h2 className="font-semibold">{user.name}</h2>
+                  </div>
+                  {user.judgement_json.review && (
+                    <>
+                      <p className="text-sm opacity-60">
+                        {'"'}
+                        {user.judgement_json.review}
+                        {'"'} -{" "}
+                        <i className="text-sm opacity-60">
+                          One Chowdhury (2024)
+                        </i>
+                      </p>
+                      <ul className="flex flex-col">
+                        {user.judgement_json.criteria.map((criterion) => (
+                          <li key={criterion.name} className="flex gap-4">
+                            <h3 className="font-semibold">{criterion.name}</h3>
+                            <p>{criterion.rating}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
                   )}
-                  <h2 className="font-semibold">{user.name}</h2>
-                </div>
-                {user.judgement_json.review && (
-                  <>
-                    <p className="text-sm opacity-60">
-                      {'"'}
-                      {user.judgement_json.review}
-                      {'"'} -{" "}
-                      <i className="text-sm opacity-60">One Chowdhury (2024)</i>
-                    </p>
-                    <ul className="flex flex-col">
-                      {user.judgement_json.criteria.map((criterion) => (
-                        <li key={criterion.name} className="flex gap-4">
-                          <h3 className="font-semibold">{criterion.name}</h3>
-                          <p>{criterion.rating}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
         )}
       </div>
