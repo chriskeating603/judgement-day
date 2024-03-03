@@ -160,8 +160,11 @@ function Main() {
                 </div>
                 {user.judgement_json.review && (
                   <>
-                    <p className="text-sm opacity-50">
+                    <p className="text-sm opacity-60">
+                      {'"'}
                       {user.judgement_json.review}
+                      {'"'} -{" "}
+                      <i className="text-sm opacity-60">One Chowdhury (2024)</i>
                     </p>
                     <ul className="flex flex-col">
                       {user.judgement_json.criteria.map((criterion) => (
