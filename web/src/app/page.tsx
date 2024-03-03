@@ -74,6 +74,7 @@ function Main() {
             side.
           </p>
           <br />
+
           {top3 && top3[0] && (
             <>
               <p>
@@ -117,6 +118,11 @@ function Main() {
         </div>
       </div>
       <div className="flex flex-col gap-4 items-center w-full px-10">
+        {!(top3 && top3[0]) && (
+          <p className="font-semibold">
+            No judgements have been made yet. Stay tuned for more...
+          </p>
+        )}
         {isLoading && (
           <p className="text-2xl font-semibold text-center w-full animate-pulse">
             Loading... this was built in a day... please wait lol
